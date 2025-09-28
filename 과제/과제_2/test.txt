@@ -1,0 +1,9 @@
+total 1912
+drwxr-xr-x  8 dongjunkoo  staff     256 Sep 20 09:19 .
+drwxr-xr-x@ 5 dongjunkoo  staff     160 Sep 20 08:40 ..
+-rw-r--r--@ 1 dongjunkoo  staff  930816 Sep 20 08:41 0917과제.ppt
+-rwxr-xr-x@ 1 dongjunkoo  staff   33504 Sep 20 09:17 hw1
+-rw-r--r--@ 1 dongjunkoo  staff    1696 Sep 20 09:17 hw1.c
+drwxr-xr-x@ 3 dongjunkoo  staff      96 Sep 20 09:12 hw1.dSYM
+-rw-r--r--@ 1 dongjunkoo  staff     152 Sep 20 08:45 hw2.c
+-rw-r--r--@ 1 dongjunkoo  staff       0 Sep 20 09:19 test.txt
