@@ -7,14 +7,11 @@
 
 int main() {
     int fd;
-    mode_t mode;
 
-    mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-
-    fd = open("test.txt", O_CREAT, mode);
+    fd = open("test.txt", O_CREAT | O_EXCL);
     if (fd == -1) {
         perror("Create");
         exit(1);
     }
-    closed(fd);
+    close(fd);
 }
