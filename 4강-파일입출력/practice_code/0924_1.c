@@ -1,0 +1,35 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#define WBUFSIZE 1024
+#define RBUFSIZE 64
+
+int main(int argc, char *argv[]) {
+    int fd, i;
+    int wbuf[WBUFSIZE], rbuf[RBUFSIZE];
+    int offset, length;
+    
+    fd = open("testdata", O_RDWR|O_CREAT, 0644);
+    for(i = 0; i < WBUFSIZE; i++) { wbuf[i] = i; }
+    write(fd, wbuf, sizeof(wbuf));
+    close(fd);
+
+    offset = atoi(argv[1]);
+    offset *= sizeof(int);
+
+    length = atoi(argv[2]);
+
+    fd = open("testdata", O_RDWR, 0644);
+    bzero(rbuf, sizeof(rbuf));
+
+    lseek(fd, (off_t)offset, SEEK_SET);
+    read(fd, rbuf, length * sizeof(int));
+
+    for(i = 0; i < length; i++) { printf("%d ", rbuf[i]); }
+    printf("\n");
+
+    close(fd);
+}
