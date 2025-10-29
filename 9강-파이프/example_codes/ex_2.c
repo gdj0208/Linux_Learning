@@ -1,0 +1,24 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+int main( ) {
+    FILE *fp;
+    char buf[256];
+
+    fp = popen("date", "r");
+    if (fp == NULL) {
+       fprintf(stderr, "popen failed\n");
+       exit(1);
+    }
+
+    if (fgets(buf, sizeof(buf), fp) == NULL) {
+        fprintf(stderr, "No data from pipe!\n");
+        exit(1);
+    }
+
+    printf("line : %s\n", buf);
+    pclose(fp);
+}
+
+// 실행 결과 : 
+// line : 2025. 10. 29. (수) 21:23:19 KST
