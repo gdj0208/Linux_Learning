@@ -1,24 +1,46 @@
 // 1103 실습 2번 문제
+/*
+dup2를 이용해 ls -al | wc -l을 구현하라
+*/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <sys/wait.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-int main() {
+int main(void) {
     int fd[2];
     pid_t pid;
 
-    pipe(fd);
-
-    switch (pid = fork())
-    {
-    case 0:
-        close(fd[1]);
-        
-        execlp("wc", "wc", "-l", NULL);
-        break;
-    case 1:
-        break;
+    if (pipe(fd) == -1) {
+        perror("pipe");
+        exit(1);
     }
 
+    switch (pid = fork()) {
+        case -1 :
+            perror("fork");
+            exit(1);
+            break;
+        case 0 : /* child */
+            close(fd[1]);
+            if (fd[0] != 0) {
+                dup2(fd[0], 0);
+                close(fd[0]);
+            }
+            execlp("wc", "wc", "-l", (char *)NULL);
+            exit(1);
+            break;
+        default :
+            close(fd[0]);
+            if (fd[1] != 1) {
+                dup2(fd[1], 1);
+                close(fd[1]);
+            }
+            execlp("ls", "ls", "-al", (char *)NULL);
+            wait(NULL);
+            break;
+    }
+
+    return 0;
 }
