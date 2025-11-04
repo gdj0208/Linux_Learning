@@ -1,19 +1,69 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-int main( ) {
-    if (mknod("TEST_FIFO1", S_IFIFO | 0644, 0) == -1) {
-        perror("mknod");
-        exit(1);
-    }
+#define MSGSIZE 6
 
-    if (mkfifo("TEST_FIFO2", 0644) == -1) {
-        perror("mkfifo");
-        exit(1);
-    }
+int parent(int *);
+int child (int *);
+
+char *msg1 = "hello";
+char *msg2 = "bye!!";
+
+main() {
+
+        int pfd[2];
+
+        if (pipe(pfd) == -1) perror ("pipe call");
+
+        if (fcntl(pfd[0], F_SETFL, O_NONBLOCK) == -1) perror ("fcntl call");
+
+        switch (fork()) {
+
+                case -1 : perror("fork call");
+                case 0  : child(pfd);
+                default : parent(pfd);
+        }
 }
 
-// ls -al TEST* 을 실행해보자
-// rm TEST*
+int parent(int p[2]) {
+
+        int nread;
+        char buf[MSGSIZE];
+
+        close (p[1]);
+
+        for (;;) {
+                switch (nread = read(p[0], buf, MSGSIZE)) {
+                        case -1:
+                                if (errno == EAGAIN) {
+                                        printf("(pipe empty)\n");
+                                        sleep(1);
+                                        break;
+                                }
+                        case 0:
+                                printf("End of conversation\n");
+                                exit(0);
+                        default:
+                                printf("MSG = %s\n", buf);
+                }
+        }
+}
+
+int child(int p[2]) {
+
+        int count;
+
+        close(p[0]);
+
+        for (count = 0; count < 3; count++) {
+
+                write(p[1], msg1, MSGSIZE);
+                sleep(3);
+        }
+
+        write(p[1], msg2, MSGSIZE);
+        exit(0);
+}
+
