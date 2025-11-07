@@ -1,24 +1,32 @@
-#include <sys/msg.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-struct mymsgbuf {
-    long mtype;
-    char mtext[80];
-};
+#include <string.h>
 
 int main() {
-    struct mymsgbuf inmsg;
-    key_t key;
-    int msgid, len;
+    int pd, n;
+    char msg[] = "Hello, FIFO";
 
-    //key = ftok("keyfile", 1);
-    if ((msgid = msgget(0777, 0)) < 0) {
-        perror("msgget");
+    printf("Server =====\n");
+
+    if (mkfifo("./TEST-FIFO", 0666) == -1) {
+        perror("mkfifo");
+        exit(1);
+    }
+    if ((pd = open("./TEST-FIFO", O_WRONLY)) == -1) {
+        perror("open");
         exit(1);
     }
 
-    len = msgrcv(msgid, &inmsg, 80, 0, 0);
-    printf("Received Msg = %s, Len=%d\n", inmsg.mtext, len);
+    printf("To Client : %s\n", msg);
+
+    n = write(pd, msg, strlen(msg)+1);
+    if (n == -1) {
+        perror("write");
+        exit(1);
+    }
+    close(pd);
 }
 

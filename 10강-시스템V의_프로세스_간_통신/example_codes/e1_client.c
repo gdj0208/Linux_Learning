@@ -1,30 +1,27 @@
-#include <sys/msg.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-
-struct mymsgbuf {
-    long mtype;
-    char mtext[80];
-};
 
 int main() {
-    key_t key;
-    int msgid;
-    struct mymsgbuf mesg;
+    int pd, n;
+    char inmsg[80];
 
-    //key = ftok("keyfile", 1);
-    msgid = msgget(0777, IPC_CREAT|0644);
-    if (msgid == -1) {
-        perror("msgget");
+    if ((pd = open("./TEST-FIFO", O_RDONLY)) == -1) {
+        perror("open");
         exit(1);
     }
 
-    mesg.mtype = 1;
-    strcpy(mesg.mtext, "Message Q Test");
+    printf("Client =====\n");
+    write(1, "From Server :", 13);
+    while ((n=read(pd, inmsg, 80)) > 0)
+        write(1, inmsg, n);
 
-    if (msgsnd(msgid, (void *)&mesg, 80, IPC_NOWAIT) == -1) {
-        perror("msgsnd");
+    if (n == -1) {
+        perror("read");
         exit(1);
     }
+
+    write(1, "\n", 1);
+    close(pd);
 }
