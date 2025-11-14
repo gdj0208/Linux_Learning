@@ -1,30 +1,30 @@
-#include <sys/msg.h>
+#include <signal.h>
+#include <sys/mman.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-struct mymsgbuf {
-    long mtype;
-    char mtext[80];
-};
-
-int main() {
+int main(int argc, char **argv) {
     key_t key;
-    int msgid;
-    struct mymsgbuf mesg;
+    int shmid;
+    void *shmaddr;
+    char buf[1024];
 
-    //key = ftok("keyfile", 1);
-    msgid = msgget(0777, IPC_CREAT|0644);
-    if (msgid == -1) {
-        perror("msgget");
-        exit(1);
-    }
+    //key = ftok("shmfile", 1);
+    shmid = shmget(0777, 1024, 0);
 
-    mesg.mtype = 1;
-    strcpy(mesg.mtext, "Message Q Test");
+    shmaddr = shmat(shmid, NULL, 0);
+    strcpy(shmaddr, "Hello, I'm talker\n");
 
-    if (msgsnd(msgid, (void *)&mesg, 80, IPC_NOWAIT) == -1) {
-        perror("msgsnd");
-        exit(1);
-    }
+    kill(atoi(argv[1]), SIGUSR1);
+    sleep(2);
+    strcpy(buf, shmaddr);
+
+    printf("Listener said : %s\n", buf);
+    system("ipcs -m");
+    shmdt(shmaddr);
+    shmctl(shmid, IPC_RMID, NULL);
 }

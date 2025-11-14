@@ -1,38 +1,37 @@
-#include <sys/mman.h>
+#include <sys/types.h>
 #include <signal.h>
-#include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void handler(int dummy) {
     ;
 }
 
-int main() {
+main() {
     key_t key;
-    int shmid;
+    int shmid, pid;
     void *shmaddr;
     char buf[1024];
     sigset_t mask;
 
-    //key = ftok("shmfile", 1);
     shmid = shmget(0777, 1024, IPC_CREAT|0666);
 
     sigfillset(&mask);
     sigdelset(&mask, SIGUSR1);
-    signal(SIGUSR1, handler);
+    sigset(SIGUSR1, handler);
+    printf("Server wait for Client %d\n", getpid());
 
-    printf("Listener wait for Talker\n");
+while(1) {
     sigsuspend(&mask);
-
-    printf("Listener Start =====\n");
     shmaddr = shmat(shmid, NULL, 0);
     strcpy(buf, shmaddr);
-    printf("Listener received : %s\n", buf);
+    printf("Server received : %s\n", buf);
+    if(buf[0] == 'q') break;
+}
 
-    strcpy(shmaddr, "Have a nice day\n");
-    sleep(3);
     shmdt(shmaddr);
+    shmctl(shmid, IPC_RMID, NULL);
 }
